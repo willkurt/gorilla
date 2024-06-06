@@ -349,6 +349,12 @@ MODEL_METADATA_MAPPING = {
         "https://huggingface.co/Snowflake/snowflake-arctic-instruct",
         "Snowflake",
         "apache-2.0",
+    ],
+    "phi3-med4k-outlines": [
+        "Microsoft/Phi-3-medium-4k-instruct (.txt + Prompt)",
+        "https://huggingface.co/microsoft/Phi-3-medium-4k-instruct",
+        "Microsoft",
+        "MIT",
     ]
 }
 
