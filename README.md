@@ -132,7 +132,52 @@ In the `notebooks` directory you will also find a `visualize_scores.ipynb` file 
 
 ## Error Analysis
 
-[TODO]
+I have added a simple simple notebook in `notebooks/error_analysis.ipynb` that serves as a starting point for simply loading the data and exploring the cases where GPT-4 was wrong and Phi-3 + .txt/Outlines was correct. It should be relatively straightfoward to explore on your own with this as a starting point.
+
+There are a couple of interesting things worth pointing out.
+
+For some of the case *Phi-3-medium just performs better than GPT-4*. Here is one such example:
+
+```
+Question: Search for upcoming month rock concerts in New York.
+-------
+GPT-4 answer (incorrect): [event_finder.find_upcoming(location="New York, NY", genre="rock")]
+Phi-3 answer (correct): [event_finder.find_upcoming(location="New York, NY", genre="rock", days_ahead=30)]
+```
+
+In this case Phi-3 was able to correctly determine that it had to look ahead 30 days, an argument GPT-4 did not use.
+
+There are also some questionable cases. For example:
+
+```
+Question: Order three bottles of olive oil and a five pound bag of rice from Safeway in Palo Alto.
+-------
+GPT-4 answer (correct): [safeway.order(location="Palo Alto", items=["olive oil", "five pound bag of rice"], quantity=[3, 1])]
+Phi-3 answer (incorrect): [safeway.order(location='Palo Alto, CA', items=['olive oil', 'rice'], quantity=[3, 1])]
+```
+
+Is it really the case that GPT-4 is wrong? You'll find this cuts both ways when you look for cases that Phi-3 got wrong and GPT-4 got correct:
+
+```
+Question: What is the change in entropy in Joules per Kelvin of a 1kg ice block at 0°C if it is heated to 100°C under 1 atmosphere of pressure?
+-------
+GPT-4 answer (correct): [entropy_change.calculate(substance='ice', mass=1, initial_temperature=0, final_temperature=100)]
+Phi-3 answer (incorrect): [entropy_change.calculate(substance="water", mass=1, initial_temperature=0, final_temperature=100, pressure=1)]
+
+```
+
+I would argue in this case GPT-4 is wrong and Phi-3 is correct. However we're sticking to the rules in the original benchmark.
+
+Finally one *huge* advantage of structured generation which is worth calling out since some people may claim it is questionable: BCFL is *very* picky about how it wants floats handled. The value `1` is *not* and acceptable float, the result must have a decimal like `1.0`. Here is an example where this comes up:
+
+```
+Question: Calculate the average of list of integers [12, 15, 18, 20, 21, 26, 30].
+-------
+GPT-4 answer (incorrect): [calculate_average(numbers=[12, 15, 18, 20, 21, 26, 30])]
+Phi-3 answer (correct): [calculate_average(numbers=[12.0, 15.0, 18.0, 20.0, 21.0, 26.0, 30.0])]
+```
+
+Personally I think this is fair (though worth noting Phi-3 would *still* come out ahead if this was not the case) since there are times were very tiny details in format are huge. Maybe this function handles ints differently than floats? Using Structured generation means we can be *very* specific about how we want the format to be.
 
 ## I want to try my own thing!
 
