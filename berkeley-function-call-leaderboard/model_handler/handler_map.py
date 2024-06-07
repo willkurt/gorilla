@@ -17,6 +17,7 @@ from model_handler.oss_handler import OSSHandler
 from model_handler.cohere_handler import CohereHandler
 from model_handler.arctic_handler import ArcticHandler
 from model_handler.generic_instruct_outlines_modal import GenericInstructOutlinesModalHandler
+from model_handler.generic_instruct_modal import GenericInstructModalHandler
 
 handler_map = {
     "gorilla-openfunctions-v0": GorillaHandler,
@@ -73,4 +74,5 @@ handler_map = {
     "command-r-plus-optimized": CohereHandler,
     "snowflake/arctic": ArcticHandler,
     "phi3-med4k-outlines": GenericInstructOutlinesModalHandler,
+    "phi3-med4k": GenericInstructModalHandler
 }

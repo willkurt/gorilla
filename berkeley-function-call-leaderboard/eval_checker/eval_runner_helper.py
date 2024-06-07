@@ -355,6 +355,12 @@ MODEL_METADATA_MAPPING = {
         "https://huggingface.co/microsoft/Phi-3-medium-4k-instruct",
         "Microsoft",
         "MIT",
+    ],
+    "phi3-med4k": [
+        "Microsoft/Phi-3-medium-4k-instruct (Prompt)",
+        "https://huggingface.co/microsoft/Phi-3-medium-4k-instruct",
+        "Microsoft",
+        "MIT",
     ]
 }
 
