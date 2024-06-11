@@ -18,6 +18,8 @@ from model_handler.cohere_handler import CohereHandler
 from model_handler.arctic_handler import ArcticHandler
 from model_handler.generic_instruct_outlines_modal import GenericInstructOutlinesModalHandler
 from model_handler.generic_instruct_modal import GenericInstructModalHandler
+from model_handler.mistral_modal_handler import MistralModalHandler
+from model_handler.mistral_modal_outlines_handler import MistralModalOutlinesHandler
 
 handler_map = {
     "gorilla-openfunctions-v0": GorillaHandler,
@@ -50,6 +52,9 @@ handler_map = {
     "mistral-small-2402-FC-Any": MistralHandler,
     "mistral-small-2402-FC-Auto": MistralHandler,
     "mistral-tiny-2312": MistralHandler,
+    "mistral7bV2-outlines": GenericInstructOutlinesModalHandler,
+    "mistral7bV3": MistralModalHandler,
+    "mistral7bV3-outlines": MistralModalOutlinesHandler,
     "fire-function-v1-FC": FireworkAIHandler,
     "Nexusflow-Raven-v2": NexusHandler,
     "gemini-1.0-pro": GeminiHandler,

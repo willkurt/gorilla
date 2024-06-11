@@ -230,6 +230,24 @@ MODEL_METADATA_MAPPING = {
         "Mistral AI",
         "Proprietary",
     ],
+    "mistral7bV2-outlines": [
+        "mistralai/Mistral-7B-Instruct-v0.2 (.txt)",
+        "https://docs.mistral.ai/guides/model-selection/",
+        "Mistral AI",
+        "Apache 2.0",
+    ],
+    "mistral7bV3": [
+        "mistralai/Mistral-7B-Instruct-v0.3 (FC)",
+        "https://docs.mistral.ai/guides/model-selection/",
+        "Mistral AI",
+        "Apache 2.0",
+    ],
+    "mistral7bV3-outlines": [
+        "mistralai/Mistral-7B-Instruct-v0.3 (.txt + FC)",
+        "https://docs.mistral.ai/guides/model-selection/",
+        "Mistral AI",
+        "Proprietary",
+    ],
     "Nexusflow-Raven-v2": [
         "Nexusflow-Raven-v2 (FC)",
         "https://huggingface.co/Nexusflow/NexusRaven-V2-13B",
@@ -519,6 +537,8 @@ def load_file(file_path):
 
 
 def get_handler(model_name):
+    print("WTF")
+    print("mistral7bV2-outlines" in handler_map.keys())
     return handler_map[model_name](model_name)
 
 

@@ -6,51 +6,49 @@ from modal import Cls
 import os, json
 from textwrap import dedent
 import re
-from transformers import AutoTokenizer
+
 from model_handler.constant import GORILLA_TO_OPENAPI
 from model_handler.model_style import ModelStyle
 from model_handler.utils import (
     _cast_to_openai_type,
     ast_parse,
-    build_fc_regex,
+    build_fc_regex
 )
-
-from model_handler.constant import (
-    SYSTEM_PROMPT_FOR_CHAT_MODEL,
-)
-
-# eventually just move this into utils
-USER_PROMPT_FOR_CHAT_MODEL_ALT = """
-    Here is a list of functions in JSON format that you can invoke to answer the question:\n{function}.
-    Use the following JSON format to repond:
-
-    [{{ "name": "function_name", "arguments": {{"arg1": <value1>, "arg2": <value2>, ...}}}}]
-
-    \n
-    NO other text MUST be included. 
-"""
+from huggingface_hub import snapshot_download
+from pathlib import Path
 
 
-class GenericInstructOutlinesModalHandler:
+from mistral_common.protocol.instruct.tool_calls import Function, Tool
+
+from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
+from mistral_common.protocol.instruct.messages import UserMessage
+from mistral_common.protocol.instruct.request import ChatCompletionRequest
+
+
+class MistralModalOutlinesHandler:
     model_name: str
     model_style: ModelStyle
 
     def __init__(self, model_name, temperature=0.7, top_p=1, max_tokens=1000) -> None:
         model_map = {
-            'phi3-med4k-outlines': 'microsoft/Phi-3-medium-4k-instruct',
-            'mistral7bV2-outlines': 'mistralai/Mistral-7B-Instruct-v0.2'
+            'mistral7bV3-outlines': 'mistralai/Mistral-7B-Instruct-v0.3',
         }
         self.model_name = model_name
         self.model_name_internal = model_map[model_name]
         self.model_style = ModelStyle.Outlines
-
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_internal)
+        mistral_models_path = Path.home().joinpath('mistral_models', '7B-Instruct-v0.3') # update this we want to support more models
+        mistral_models_path.mkdir(parents=True, exist_ok=True)
+        snapshot_download(repo_id=self.model_name_internal,
+                  allow_patterns=["params.json", "consolidated.safetensors", "tokenizer.model.v3"],
+                  local_dir=mistral_models_path)
+    
+        self.tokenizer = MistralTokenizer.from_file(f"{mistral_models_path}/tokenizer.model.v3")
 
     def format_result(self, result):
         # formats just in case.
         from ast import literal_eval
         import json
-        cleaned = result.replace("_dot_",".") # shouldn't matter
+        cleaned = result.replace("_dot_",".")
         try:
             value = json.loads(cleaned)[0]
         except:
@@ -77,27 +75,30 @@ class GenericInstructOutlinesModalHandler:
         if type(functions) is not list:
                 functions = [functions]
         function = functions[0]
-        messages = [
-            {"role": "user", "content": SYSTEM_PROMPT_FOR_CHAT_MODEL},
-            {"role": "user", "content": USER_PROMPT_FOR_CHAT_MODEL_ALT.format(function=function)},
-            {"role": "user", "content": prompt}
+        completion_request = ChatCompletionRequest(
+            tools=[
+                Tool(
+                    function=Function(
+                        name=function['name'].replace(".","_dot_"),
+                        description=function['description'],
+                        parameters={
+                            "type": "object",
+                            "properties": _cast_to_openai_type(function["parameters"]["properties"], GORILLA_TO_OPENAPI, "simple"),
+                            "required": function['parameters']['required'],
+                        },
+                    )
+                )
+            ],
+            messages=[
+                UserMessage(content=prompt),
+                ],
+        )
 
-        ]
-        # mistral instruct requires these to alternate...
-        if 'mistral' in self.model_name:
-            messages = [
-                {"role": "user", "content": SYSTEM_PROMPT_FOR_CHAT_MODEL},
-                {"role": "assistant", "content": "" },
-                {"role": "user", "content": USER_PROMPT_FOR_CHAT_MODEL_ALT.format(function=function)},
-                {"role": "assistant", "content": "" },
-                {"role": "user", "content": prompt}
-
-            ]            
-
-        fc_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
+        fc_prompt = self.tokenizer.encode_chat_completion(completion_request).text
         preformatted_result = None
         try:
-            fc_regex = build_fc_regex(function)
+            fc_regex = build_fc_regex(function,dot_replace=True)
+
             Model = Cls.lookup("outlines-app-regex", "Model",environment_name="eval")
             m = Model()
             result = m.generate.remote(self.model_name_internal, fc_regex, fc_prompt)
