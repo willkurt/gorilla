@@ -52,6 +52,7 @@ handler_map = {
     "mistral-small-2402-FC-Any": MistralHandler,
     "mistral-small-2402-FC-Auto": MistralHandler,
     "mistral-tiny-2312": MistralHandler,
+    "mistral7bV2": GenericInstructModalHandler,
     "mistral7bV2-outlines": GenericInstructOutlinesModalHandler,
     "mistral7bV3": MistralModalHandler,
     "mistral7bV3-outlines": MistralModalOutlinesHandler,

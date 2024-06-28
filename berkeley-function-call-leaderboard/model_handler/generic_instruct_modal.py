@@ -38,6 +38,7 @@ class GenericInstructModalHandler:
     def __init__(self, model_name, temperature=0.7, top_p=1, max_tokens=1000) -> None:
         model_map = {
             'phi3-med4k': 'microsoft/Phi-3-medium-4k-instruct',
+            'mistral7bV2': 'mistralai/Mistral-7B-Instruct-v0.2',
         }
         self.model_name = model_name
         self.model_name_internal = model_map[model_name]
@@ -82,7 +83,16 @@ class GenericInstructModalHandler:
             {"role": "user", "content": prompt}
 
         ]
+        # mistral instruct requires these to alternate...
+        if 'mistral' in self.model_name:
+            messages = [
+                {"role": "user", "content": SYSTEM_PROMPT_FOR_CHAT_MODEL},
+                {"role": "assistant", "content": "" },
+                {"role": "user", "content": USER_PROMPT_FOR_CHAT_MODEL_ALT.format(function=function)},
+                {"role": "assistant", "content": "" },
+                {"role": "user", "content": prompt}
 
+            ]  
         fc_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
         preformatted_result = None
         try:

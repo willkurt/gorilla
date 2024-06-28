@@ -230,6 +230,12 @@ MODEL_METADATA_MAPPING = {
         "Mistral AI",
         "Proprietary",
     ],
+    "mistral7bV2":  [
+        "mistralai/Mistral-7B-Instruct-v0.2 (Prompt)",
+        "https://docs.mistral.ai/guides/model-selection/",
+        "Mistral AI",
+        "Apache 2.0",
+    ],
     "mistral7bV2-outlines": [
         "mistralai/Mistral-7B-Instruct-v0.2 (.txt)",
         "https://docs.mistral.ai/guides/model-selection/",
@@ -537,8 +543,6 @@ def load_file(file_path):
 
 
 def get_handler(model_name):
-    print("WTF")
-    print("mistral7bV2-outlines" in handler_map.keys())
     return handler_map[model_name](model_name)
 
 
